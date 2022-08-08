@@ -1,0 +1,1 @@
+set b=C:\MinGW\msys\1.0\bin\bash.exe s.sh
