@@ -29,10 +29,12 @@ struct TextureInfo
 class Mesh
 {
 public:
+    Mesh() {}
     Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<TextureInfo> textures);
     ~Mesh();
-    void draw(Shader &shader);
 
+    void init(vector<Vertex> vertices, vector<uint32_t> indices, vector<TextureInfo> textures);
+    void draw(Shader &shader);
     vector<Vertex> vertices;
     vector<uint32_t> indices;
     vector<TextureInfo> textures;

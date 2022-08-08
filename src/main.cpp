@@ -20,7 +20,7 @@
 #include "gfx/mesh.h"
 #include "Camera.h"
 #include "model.h"
-#include "TinyModel.h"
+#include "Chunk/Chunk.h"
 
 using namespace std;
 using namespace glm;
@@ -28,21 +28,9 @@ using namespace glm;
 #define WIDTH 800
 #define HEIGHT 600
 
-enum FaceSide
-{
-	BACK,
-	FRONT,
-	LEFT,
-	RIGHT,
-	UP,
-	DOWN
-};
-
 void framesize_callback(GLFWwindow *win, int w, int h);
 void mouse_callback(GLFWwindow *win, double xpos, double ypos);
 void processInput(GLFWwindow *win);
-vector<float> getFaceMesh(FaceSide side);
-void updateVertex(vector<Vertex> &data, vector<float> vert, vec3 pos);
 GLFWwindow *win = NULL;
 
 Camera cam(vec3(0.0f));
@@ -238,9 +226,7 @@ int main(int argc, char **argv)
 	// cout << "ARG: " << argv[1] << '\n';
 	// string s = argv[1];
 
-	vector<float> v = getFaceMesh(FaceSide::UP);
-
-#define SIZE 11
+#define SIZE 32
 	bool chunk[SIZE][SIZE][SIZE] = {{{false}}};
 	for (int z = 0; z < SIZE; z++)
 		for (int y = 0 + z; y < SIZE - z; y++)
@@ -253,39 +239,38 @@ int main(int argc, char **argv)
 	vector<uint32_t> id;
 
 	cout << chunk[2][2][2] << '\n';
-	for (int x = 0; x < SIZE; x++)
-		for (int y = 0; y < SIZE; y++)
-			for (int z = 0; z < SIZE; z++)
-			{
+	// for (int x = 0; x < SIZE; x++)
+	// 	for (int y = 0; y < SIZE; y++)
+	// 		for (int z = 0; z < SIZE; z++)
+	// 		{
+	// 			if (!chunk[x][y][z])
+	// 				continue;
+	// 			if (x == 0)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
+	// 			if (y == 0)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
+	// 			if (z == 0)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
+	// 			if (x == SIZE - 1)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
+	// 			if (y == SIZE - 1)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
+	// 			if (z == SIZE - 1)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
 
-				if (!chunk[x][y][z])
-					continue;
-				if (x == 0)
-					updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
-				if (y == 0)
-					updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
-				if (z == 0)
-					updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
-				if (x == SIZE - 1)
-					updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
-				if (y == SIZE - 1)
-					updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
-				if (z == SIZE - 1)
-					updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
-
-				if (x > 0 && !chunk[x - 1][y][z])
-					updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
-				if (y > 0 && chunk[x][y - 1][z] == false)
-					updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
-				if (z > 0 && chunk[x][y][z - 1] == false)
-					updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
-				if (x + 1 < SIZE && chunk[x + 1][y][z] == false)
-					updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
-				if (y + 1 < SIZE && chunk[x][y + 1][z] == false)
-					updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
-				if (z + 1 < SIZE && chunk[x][y][z + 1] == false)
-					updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
-			}
+	// 			if (x > 0 && !chunk[x - 1][y][z])
+	// 				updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
+	// 			if (y > 0 && chunk[x][y - 1][z] == false)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
+	// 			if (z > 0 && chunk[x][y][z - 1] == false)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
+	// 			if (x + 1 < SIZE && chunk[x + 1][y][z] == false)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
+	// 			if (y + 1 < SIZE && chunk[x][y + 1][z] == false)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
+	// 			if (z + 1 < SIZE && chunk[x][y][z + 1] == false)
+	// 				updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
+	// 		}
 
 	Texture tex("res\\brick.png");
 	vector<TextureInfo> t;
@@ -296,6 +281,9 @@ int main(int argc, char **argv)
 	// TinyModel tst(s);
 	Mesh ms(ve, id, t);
 
+	Chunk ch;
+	ch.setVoxels(chunk);
+	ch.generateMesh();
 	bool pressed = false;
 	float c = 1;
 	mat4 model = mat4(1.0f);
@@ -355,7 +343,7 @@ int main(int argc, char **argv)
 		// model = scale(model, vec3(1.0f, 1.0f, 1.0f));
 		shader.setVec3("objCol", vec3(1.0f, 0.2f, 0.1f));
 		shader.setMat4("model", value_ptr(model));
-		ms.draw(shader);
+		ch.draw(shader);
 		// }
 
 		vao.bind();
@@ -420,51 +408,6 @@ void mouse_callback(GLFWwindow *win, double xpos, double ypos)
 	cam.processMouse(xpos, ypos);
 }
 
-vector<float> getFaceMesh(FaceSide side)
-{
-	vector<float> vert;
-	int fact = 0;
-	switch (side)
-	{
-	case FaceSide::BACK:
-		fact = 0;
-		break;
-	case FaceSide::FRONT:
-		fact = 1;
-		break;
-	case FaceSide::LEFT:
-		fact = 2;
-		break;
-	case FaceSide::RIGHT:
-		fact = 3;
-		break;
-	case FaceSide::DOWN:
-		fact = 4;
-		break;
-	case FaceSide::UP:
-		fact = 5;
-		break;
-	default:
-		break;
-	}
-	for (int i = 0; i < 6 * 8; i++)
-		vert.push_back(vertices[fact * (6 * 8) + i]);
-
-	return vert;
-}
-
-void updateVertex(vector<Vertex> &data, vector<float> vert, vec3 pos)
-{
-	for (int i = 0; i < 8 * 6; i += 8)
-	{
-		Vertex v;
-		v.Position = vec3(vert[i + 0] + pos.x, vert[i + 1] + pos.y, vert[i + 2] + pos.z);
-		v.Normal = vec3(vert[i + 3], vert[i + 4], vert[i + 5]);
-		v.TexCoords = vec2(vert[i + 6], vert[i + 7]);
-
-		data.push_back(v);
-	}
-}
 // Front Back Z-AXIS
 // UP DOWN    Y-AXIS
 // RIGHT LEFT X-AXIS

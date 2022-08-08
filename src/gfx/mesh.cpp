@@ -4,6 +4,11 @@
 
 Mesh::Mesh(vector<Vertex> vertices, vector<uint32_t> indices, vector<TextureInfo> textures)
 {
+    init(vertices, indices, textures);
+}
+
+void Mesh::init(vector<Vertex> vertices, vector<uint32_t> indices, vector<TextureInfo> textures)
+{
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
@@ -41,7 +46,7 @@ void Mesh::draw(Shader &shader)
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     else
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-        // glDrawArrays(GL_LINES, 0, vertices.size());
+    // glDrawArrays(GL_LINES, 0, vertices.size());
     vao->unbind();
 }
 
