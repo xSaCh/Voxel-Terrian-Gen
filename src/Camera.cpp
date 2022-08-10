@@ -66,9 +66,9 @@ mat4 Camera::getViewMatrix()
 void Camera::processInput(float deltaTime)
 {
 	if (glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		cameraSpeed = 7.0f;
+		cameraSpeed = 12.0f;
 	else if (glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-		cameraSpeed = 5.0f;
+		cameraSpeed = 10.0f;
 
 	if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
 		pos += cameraSpeed * deltaTime * front;
