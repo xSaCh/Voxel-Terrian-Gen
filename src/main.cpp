@@ -8,9 +8,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <imgui/imgui.h>
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
+#include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_glfw.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <PerlinNoise.hpp>
 
 #include "gfx/shader.h"
 #include "gfx/vao.h"
@@ -31,9 +38,11 @@ using namespace glm;
 void framesize_callback(GLFWwindow *win, int w, int h);
 void mouse_callback(GLFWwindow *win, double xpos, double ypos);
 void processInput(GLFWwindow *win);
+void setChunk(float fac, vec3 worldPos, int i);
+
 GLFWwindow *win = NULL;
 
-Camera cam(vec3(0.0f));
+Camera cam(vec3(15.16f, 48.04f, 36.89f));
 
 float deltaTime, prevtime;
 
@@ -118,6 +127,14 @@ unsigned int cI[] = {
 	// top
 	3, 2, 6, 6, 7, 3};
 
+bool cursorActive = false;
+
+#define C_T 4
+Chunk ch[C_T];
+
+siv::PerlinNoise::seed_type seed = 123456u;
+siv::PerlinNoise perlin{seed};
+
 int main(int argc, char **argv)
 {
 #pragma region GLFW
@@ -144,13 +161,33 @@ int main(int argc, char **argv)
 	glfwSetCursorPosCallback(win, mouse_callback);
 
 	glfwSwapInterval(1);
-	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	// Enable Aplha Channel
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// IMGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO &io = ImGui::GetIO();
+	(void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;	  // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;	  // Enable Multi-Viewport / Platform Windows
+
+	// io.ConfigViewportsNoTaskBarIcon = true;
+	ImGui::StyleColorsDark();
+	ImGuiStyle &style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
+	ImGui_ImplGlfw_InitForOpenGL(win, true);
+	ImGui_ImplOpenGL3_Init("#version 330 core");
 #pragma endregion
 
 #pragma region Init
@@ -223,72 +260,21 @@ int main(int argc, char **argv)
 
 #pragma endregion
 
-	// cout << "ARG: " << argv[1] << '\n';
-	// string s = argv[1];
-
 #define SIZE 32
-	bool chunk[SIZE][SIZE][SIZE] = {{{false}}};
-	for (int z = 0; z < SIZE; z++)
-		for (int y = 0 + z; y < SIZE - z; y++)
-			for (int x = 0 + z; x < SIZE - z; x++)
-			{
-				chunk[x][z][y] = true;
-			}
 
-	vector<Vertex> ve;
-	vector<uint32_t> id;
+	setChunk(0.027, vec3(0.0f), 0);
+	setChunk(0.027, vec3(SIZE, 0.0f, 0.0f), 1);
+	setChunk(0.027, vec3(0, 0.0f, SIZE), 2);
+	setChunk(0.027, vec3(SIZE, 0.0f, SIZE), 3);
 
-	cout << chunk[2][2][2] << '\n';
-	// for (int x = 0; x < SIZE; x++)
-	// 	for (int y = 0; y < SIZE; y++)
-	// 		for (int z = 0; z < SIZE; z++)
-	// 		{
-	// 			if (!chunk[x][y][z])
-	// 				continue;
-	// 			if (x == 0)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
-	// 			if (y == 0)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
-	// 			if (z == 0)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
-	// 			if (x == SIZE - 1)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
-	// 			if (y == SIZE - 1)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
-	// 			if (z == SIZE - 1)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
-
-	// 			if (x > 0 && !chunk[x - 1][y][z])
-	// 				updateVertex(ve, getFaceMesh(FaceSide::LEFT), vec3(x, y, z));
-	// 			if (y > 0 && chunk[x][y - 1][z] == false)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::DOWN), vec3(x, y, z));
-	// 			if (z > 0 && chunk[x][y][z - 1] == false)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::BACK), vec3(x, y, z));
-	// 			if (x + 1 < SIZE && chunk[x + 1][y][z] == false)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::RIGHT), vec3(x, y, z));
-	// 			if (y + 1 < SIZE && chunk[x][y + 1][z] == false)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::UP), vec3(x, y, z));
-	// 			if (z + 1 < SIZE && chunk[x][y][z + 1] == false)
-	// 				updateVertex(ve, getFaceMesh(FaceSide::FRONT), vec3(x, y, z));
-	// 		}
-
-	Texture tex("res\\brick.png");
-	vector<TextureInfo> t;
-	TextureInfo ti;
-	ti.id = tex.ID;
-	ti.type = "texture_diffuse";
-	t.push_back(ti);
-	// TinyModel tst(s);
-	Mesh ms(ve, id, t);
-
-	Chunk ch;
-	ch.setVoxels(chunk);
-	ch.generateMesh();
 	bool pressed = false;
+	bool esPres = true;
+
 	float c = 1;
 	mat4 model = mat4(1.0f);
 
 	bool isWire = false;
+	float chunkFac = 0.1f;
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(win))
 	{
@@ -316,36 +302,37 @@ int main(int argc, char **argv)
 		lightShader.setMat4("model", value_ptr(lightModel));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// shader.setVec3("objCol", vec3(0.8f, 0.8f, 0.8f));
-
-		// // Floor
-		// model = mat4(1.0f);
-		// model = translate(model, vec3(0.0f));
-		// model = rotate(model, radians(0.0f), vec3(1.0f, 1.0f, 1.0f));
-		// model = scale(model, vec3(4.0f, 0.1f, 4.0f));
-		// shader.setMat4("model", value_ptr(model));
-		// glDrawArrays(GL_TRIANGLES, 0, 36);
-		// vao.bind();
-
 		shader.activate();
-		// shader.setVec3("lightPos", vec3(3.0f, 1.0f, -1.0f) * c);
 		shader.setVec3("lightPos", cam.pos);
 		shader.setVec3("viewPos", cam.pos);
 		shader.setMat4("view", value_ptr(view));
 
-		// for (int x = 0; x < 4; x++)
-		// 	for (int y = 0; y < 4; y++)
-		// 		for (int z = 0; z < 4; z++)
-		// 		{
-		model = mat4(1.0f);
-		model = translate(model, vec3(0.0f));
-		model = rotate(model, radians(0.0f), vec3(1.0f, 1.0f, 1.0f));
-		// model = scale(model, vec3(1.0f, 1.0f, 1.0f));
-		shader.setVec3("objCol", vec3(1.0f, 0.2f, 0.1f));
-		shader.setMat4("model", value_ptr(model));
-		ch.draw(shader);
-		// }
+		for (int i = 0; i < C_T; i++)
+		{
+			model = mat4(1.0f);
+			vec3 p = vec3(0.0f);
+			switch (i)
+			{
+			case 1:
+				p = vec3((float)SIZE, 0.0f, 0.0f);
+				break;
+			case 2:
+				p = vec3(0, 0.0f, (float)SIZE);
+				break;
+			case 3:
+				p = vec3((float)SIZE, 0.0f, (float)SIZE);
+				break;
+			default:
+				break;
+			}
 
+			model = translate(model, p);
+			// model = rotate(model, radians(0.0f), vec3(1.0f, 1.0f, 1.0f));
+			// model = scale(model, vec3(1.0f, 1.0f, 1.0f));
+			shader.setVec3("objCol", vec3(1.0f, 0.2f, 0.1f));
+			shader.setMat4("model", value_ptr(model));
+			ch[i].draw(shader);
+		}
 		vao.bind();
 		model = mat4(1.0f);
 		model = translate(model, vec3(3.0f, -1.0f, 0.0f));
@@ -355,17 +342,37 @@ int main(int argc, char **argv)
 		shader.setMat4("model", value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// Backpack
-		model = mat4(1.0f);
-		model = translate(model, vec3(0.0f, 0.0f, 0.0f));
-		model = rotate(model, radians(0.0f), vec3(1.0f, 1.0f, 1.0f));
-		model = scale(model, vec3(1.0f));
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("Props");
+		float f;
+		if (ImGui::SliderFloat("FACTOR", &f, 0.0f, 1.0f))
+		{
+			setChunk(f, vec3(0.0f), 0);
+			setChunk(f, vec3(SIZE, 0.0f, 0.0f), 1);
+			setChunk(f, vec3(0, 0.0f, SIZE), 2);
+			setChunk(f, vec3(SIZE, 0.0f, SIZE), 3);
 
-		// modelShader.activate();
-		shader.setMat4("model", value_ptr(model));
-		// modelShader.setMat4("view", value_ptr(view));
-		// ms.draw(modelShader);
-		// tst.draw(modelShader);
+			// chunkFac = f;
+			printf("%f \n", f);
+		}
+
+		if (ImGui::Button("CLICK HERE"))
+		{
+			seed = (uint32_t)(rand() * 156907892);
+			cout << seed << '\n';
+			perlin = siv::PerlinNoise{seed};
+
+			setChunk(f, vec3(0.0f), 0);
+			setChunk(f, vec3(SIZE, 0.0f, 0.0f), 1);
+			setChunk(f, vec3(0, 0.0f, SIZE), 2);
+			setChunk(f, vec3(SIZE, 0.0f, SIZE), 3);
+		}
+		ImGui::SameLine();
+		ImGui::LabelText("Seed", ": %i", seed);
+
+		ImGui::End();
 
 		float curTime = glfwGetTime();
 		deltaTime = curTime - prevtime;
@@ -382,10 +389,29 @@ int main(int argc, char **argv)
 			// c += 0.1f;
 		}
 
+		if (!esPres && (glfwGetKey(win, GLFW_KEY_P) == GLFW_PRESS))
+		{
+			glfwSetInputMode(win, GLFW_CURSOR, cursorActive ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+			cursorActive = !cursorActive;
+			esPres = true;
+		}
+
 		if (glfwGetKey(win, GLFW_KEY_C) == GLFW_RELEASE)
 			pressed = false;
+		if (glfwGetKey(win, GLFW_KEY_P) == GLFW_RELEASE)
+			esPres = false;
 		if (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS)
 			glfwSetWindowShouldClose(win, true);
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow *backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
 		glfwSwapBuffers(win);
 	}
 
@@ -398,6 +424,29 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+void setChunk(float fac, vec3 worldPos, int i)
+{
+
+	bool chunk[SIZE][SIZE][SIZE] = {{{false}}};
+
+	printf(" X:%f Y:%f Z:%f \n", worldPos.x, worldPos.y, worldPos.z);
+	for (int x = 0; x < SIZE; x++)
+		for (int z = 0; z < SIZE; z++)
+		{
+			double n = perlin.octave2D_01((x + worldPos.x) * fac, (z + worldPos.z) * fac, 8);
+
+			// printf("[ %i ] ", (int)(x + worldPos.x));
+			int height = n * (SIZE - 1);
+			// if (height >= SIZE || height < 0)
+			// 	printf("H: %i n: %f\n", height, n);
+			// if (n > 0.1)
+			for (int y = 0; y < height; y++)
+				chunk[x][y][z] = true;
+		}
+	ch[i].setVoxels(chunk);
+	ch[i].generateMesh();
+}
+
 void framesize_callback(GLFWwindow *win, int w, int h)
 {
 	glViewport(0, 0, w, h);
@@ -405,7 +454,8 @@ void framesize_callback(GLFWwindow *win, int w, int h)
 
 void mouse_callback(GLFWwindow *win, double xpos, double ypos)
 {
-	cam.processMouse(xpos, ypos);
+	if (!cursorActive)
+		cam.processMouse(xpos, ypos);
 }
 
 // Front Back Z-AXIS

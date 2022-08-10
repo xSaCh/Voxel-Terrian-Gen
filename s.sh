@@ -4,8 +4,8 @@ CXX="g++"
 CXX_FLAGS="-std=c++17" #-Wextra -Wall
 
 SRC=`ls src/*.cpp src/**/*.cpp`
-INCLUDE="./includes"
 IMGUI_INCLUDE="./includes/imgui"
+INCLUDE="./includes"
 LIB="./lib"
 
 LIBRARIES="-lglad -lglfw3dll -lassimp"
@@ -28,8 +28,8 @@ Compile()
 
 Build()
 {
-	echo $CXX -o bin/$EXECUTABLE obj/*.o -L$LIB $LIBRARIES
-	$CXX -o bin/$EXECUTABLE obj/*.o -L$LIB $LIBRARIES
+	echo $CXX -o bin/$EXECUTABLE obj/*.o imgui.a -L$LIB $LIBRARIES
+	$CXX -o bin/$EXECUTABLE obj/*.o imgui.a -L$LIB $LIBRARIES
 }
 
 CompileR()

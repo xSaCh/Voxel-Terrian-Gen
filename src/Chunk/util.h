@@ -15,8 +15,10 @@ enum FaceSide
     DOWN 
 };
 
+// Return Vertex,Normal,TexCoord(VNT) of given faceside 
 std::vector<float> getFaceMesh(FaceSide side);
-void updateVertex(std::vector<Vertex> &data, std::vector<float> vert, glm::vec3 pos);
+// add VNT data at given pos
+void updateVertex(std::vector<Vertex> &data,int blockID, std::vector<float> vert, glm::vec3 pos);
 
 inline static float blockVertices[] = {
 	//     positions      // normals    // texture coords

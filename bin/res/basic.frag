@@ -25,7 +25,7 @@ void main()
     float ambientStrength = 0.1f;
     vec3 ambientColor = ambientStrength * lightCo;
 
-    float specularStrength = 0.5f;
+    float specularStrength = 0.2f;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
 
@@ -33,4 +33,5 @@ void main()
     vec3 specularColor = specularFactor * lightCo;
 
     gl_FragColor = texture(texture_diffuse1,texCoords) * vec4((ambientColor + diffuseColor + specularColor) ,1.0f );
+    // gl_FragColor = vec4(vec3(0.8)*(ambientColor + diffuseColor + specularColor) ,1.0f );
 }

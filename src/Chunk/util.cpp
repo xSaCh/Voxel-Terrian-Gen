@@ -33,14 +33,20 @@ vector<float> getFaceMesh(FaceSide side)
 	return vert;
 }
 
-void updateVertex(std::vector<Vertex> &data, std::vector<float> vert, glm::vec3 pos)
+void updateVertex(std::vector<Vertex> &data, int blockID, std::vector<float> vert, glm::vec3 pos)
 {
+	float ratio = 128 / 256.0f; // 128 size of one tex and 256 is size of tex atlas
 	for (int i = 0; i < 8 * 6; i += 8)
 	{
 		Vertex v;
 		v.Position = glm::vec3(vert[i + 0] + pos.x, vert[i + 1] + pos.y, vert[i + 2] + pos.z);
 		v.Normal = glm::vec3(vert[i + 3], vert[i + 4], vert[i + 5]);
-		v.TexCoords = glm::vec2(vert[i + 6], vert[i + 7]);
+		// TODO: Convert generic coords to texture atlas coords
+		glm::vec2 gCoord = glm::vec2(vert[i + 6], vert[i + 7]);
+		float x = blockID % 2;
+		float y = blockID / 2;
+		v.TexCoords = glm::vec2((gCoord.x * ratio) + x, (gCoord.y * ratio) + y);
+		// v.TexCoords = glm::vec2(gCoord.x * ratio, gCoord.y * ratio);
 
 		data.push_back(v);
 	}

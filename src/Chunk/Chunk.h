@@ -14,7 +14,8 @@ public:
     ~Chunk() {}
     void generateMesh();
     void setVoxels(bool (&data)[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]);
-    void draw(Shader &shader){mesh.draw(shader);}
+    void draw(Shader &shader) { mesh.draw(shader); }
+
 private:
     bool voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = {{{false}}};
     Mesh mesh;
