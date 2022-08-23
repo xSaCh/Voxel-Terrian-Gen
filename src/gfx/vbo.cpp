@@ -1,10 +1,11 @@
 #include "vbo.h"
 
-VBO::VBO(void *data, GLsizeiptr size)
+VBO::VBO(void *data, GLsizeiptr size, bool isStaticDraw)
 {
     glGenBuffers(1, &ID);
     bind();
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, size, data, isStaticDraw ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size, data, isStaticDraw ? GL_DYNAMIC_DRAW : GL_DYNAMIC_DRAW);
 }
 
 void VBO::bind()

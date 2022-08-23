@@ -53,6 +53,7 @@ struct GMesh
     }
 };
 
+
 inline GMesh getMeshFace(BlockFace face)
 {
     if (face == BlockFace::Top)

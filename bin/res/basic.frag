@@ -32,6 +32,6 @@ void main()
     float specularFactor = pow(max(dot(viewDir,reflectDir),0.0f),32);
     vec3 specularColor = specularFactor * lightCo;
 
-    gl_FragColor = texture(texture_diffuse1,texCoords) * vec4((ambientColor + diffuseColor + specularColor) ,1.0f );
-    // gl_FragColor = vec4(vec3(0.8)*(ambientColor + diffuseColor + specularColor) ,1.0f );
+    gl_FragColor = texture(texture_diffuse1,texCoords) * vec4(objCol*(ambientColor + diffuseColor + specularColor) ,1.0f );
+    // gl_FragColor = vec4(objCol*(ambientColor + diffuseColor + specularColor) ,1.0f );
 }

@@ -1,8 +1,9 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include <iostream>
 #include <vector>
-#include "../gfx/mesh.h"
+#include "chunkMesh.h"
 #include "../gfx/shader.h"
 
 #define CHUNK_SIZE 32
@@ -11,14 +12,18 @@ class Chunk
 {
 public:
     Chunk() {}
-    ~Chunk() {}
+    ~Chunk()
+    { /*std::cout << "Chunk Decons.\n";*/
+    }
     void generateMesh();
     void setVoxels(bool (&data)[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]);
+    void updateBlock(int x, int y, int z, bool val);
     void draw(Shader &shader) { mesh.draw(shader); }
 
-private:
     bool voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = {{{false}}};
-    Mesh mesh;
+
+private:
+    ChunkMesh mesh;
 };
 
 #endif

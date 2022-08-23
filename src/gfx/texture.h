@@ -12,7 +12,7 @@ public:
     int width, height, channels;
 
     Texture(const char *filePath);
-
+    Texture(uint32_t id) {ID = id;width=-1;height=-1;channels=-1;}
     void bind();
     void unbind();
     void deleteTexture();

@@ -8,7 +8,7 @@ class VBO
 {
 public:
     uint32_t ID;
-    VBO(void *data, GLsizeiptr size);
+    VBO(void *data, GLsizeiptr size, bool isStaticDraw = true);
     void bind();
     void unbind();
     void deleteVBO();

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "tiny_obj_loader.h"
-#include "gfx\mesh.h"
+#include "gfx/mesh.h"
 
 class TinyModel
 {

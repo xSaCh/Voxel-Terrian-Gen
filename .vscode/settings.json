@@ -2,6 +2,10 @@
   "files.associations": {
     "xstring": "cpp",
     "vector": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "array": "cpp",
+    "string_view": "cpp",
+    "new": "cpp",
+    "memory": "cpp"
   }
 }

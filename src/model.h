@@ -8,7 +8,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "gfx\mesh.h"
+#include "gfx/mesh.h"
 
 class Model
 {

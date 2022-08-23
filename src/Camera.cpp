@@ -65,24 +65,25 @@ mat4 Camera::getViewMatrix()
 
 void Camera::processInput(float deltaTime)
 {
+	float camSpeed = cameraSpeed;
 	if (glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		cameraSpeed = 12.0f;
-	else if (glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-		cameraSpeed = 10.0f;
+		camSpeed *= 1.2f;
+	// else if (glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+	// 	camSpeed = 10.0f;
 
 	if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
-		pos += cameraSpeed * deltaTime * front;
+		pos += camSpeed * deltaTime * front;
 	if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS)
-		pos -= cameraSpeed * deltaTime * front;
+		pos -= camSpeed * deltaTime * front;
 	if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS)
-		pos += normalize(cross(front, up)) * deltaTime * cameraSpeed;
+		pos += normalize(cross(front, up)) * deltaTime * camSpeed;
 	if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS)
-		pos -= normalize(cross(front, up)) * deltaTime * cameraSpeed;
+		pos -= normalize(cross(front, up)) * deltaTime * camSpeed;
 
 	if (glfwGetKey(win, GLFW_KEY_SPACE) == GLFW_PRESS)
-		pos += cameraSpeed * deltaTime * up;
+		pos += camSpeed * deltaTime * up;
 	if (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		pos -= cameraSpeed * deltaTime * up;
+		pos -= camSpeed * deltaTime * up;
 
 	if (glfwGetKey(win, GLFW_KEY_Z) == GLFW_PRESS)
 		printf("PX:%f PY:%f P:%f Y:%f\n", pos.x, pos.y, pitchA, yawA);

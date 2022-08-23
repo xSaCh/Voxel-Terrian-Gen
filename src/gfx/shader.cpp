@@ -29,6 +29,9 @@ Shader::Shader(const char *vertexFile, const char *fragmentFile)
 
     glDeleteShader(vertShad);
     glDeleteShader(fragShad);
+
+    delete[] vs;
+    delete[] fs;
 }
 
 void Shader::activate()

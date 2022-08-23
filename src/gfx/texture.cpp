@@ -48,6 +48,7 @@ void Texture::deleteTexture()
 
 uint8_t *Texture::rawPixeldata(const char *filePath)
 {
+    // change(T -> F) V Flip for demo
     stbi_set_flip_vertically_on_load(false);
     uint8_t *data = stbi_load(filePath, &width, &height, &channels, STBI_rgb_alpha);
     return data;
