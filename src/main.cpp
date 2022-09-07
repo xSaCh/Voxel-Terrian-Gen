@@ -31,6 +31,7 @@
 #include "gfx/mesh.h"
 #include "Camera.h"
 #include "model.h"
+#include "Chunk/ChunkManager.h"
 #include "Chunk/Chunk.h"
 
 using namespace std;
@@ -42,13 +43,14 @@ using namespace glm;
 void framesize_callback(GLFWwindow *win, int w, int h);
 void mouse_callback(GLFWwindow *win, double xpos, double ypos);
 void processInput(GLFWwindow *win);
-Chunk *setChunk(float fac, vec3 worldPos, int i);
-void updateChunks(vec3 &pos, bool forceUpdate = false);
+// Chunk *setChunk(float fac, vec3 worldPos, int i);
+// void updateChunks(vec3 &pos, bool forceUpdate = false);
 vec3 voxelRayCast(vec3 &chunpos, vec3 &pos, vec3 &front, int *side);
 
 GLFWwindow *win = NULL;
 Camera cam(vec3(15.16f, 48.04f, 36.89f));
 Input *inp = NULL;
+ChunkManager chunkMan;
 
 float deltaTime, prevtime;
 
@@ -122,15 +124,15 @@ float c[] = {
 
 bool cursorActive = false;
 
-#define C_T 4
-vector<Chunk> ch(C_T *C_T);
-unordered_map<vec3, Chunk *> loadedC;
+// #define C_T 4
+// vector<Chunk> ch(C_T *C_T);
+// unordered_map<vec3, Chunk *> loadedC;
 
-siv::PerlinNoise::seed_type seed = 123456u;
-siv::PerlinNoise perlin{seed};
-float factor = 0.027f;
+// siv::PerlinNoise::seed_type seed = 123456u;
+// siv::PerlinNoise perlin{seed};
+// float factor = 0.027f;
 
-vec2 loadPos = vec2(0, 0);
+// vec2 loadPos = vec2(0, 0);
 
 int main(int argc, char **argv)
 {
@@ -254,9 +256,10 @@ int main(int argc, char **argv)
 
 #pragma endregion
 
-#define SIZE 32
+	// #define SIZE 32
 
-	updateChunks(cam.pos);
+	chunkMan.updateChunks(cam.pos);
+	// updateChunks(cam.pos);
 
 	bool pressed = false;
 	bool esPres = true;
@@ -270,7 +273,7 @@ int main(int argc, char **argv)
 	int upPos = 0;
 	bool upTog = true;
 
-	float f = factor;
+	// float f = factor;
 
 	bool camTog = true;
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -279,6 +282,9 @@ int main(int argc, char **argv)
 		inp->Update();
 		glfwPollEvents();
 
+		glClearColor(0.49f, 0.67f, 0.95f, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		if (!cursorActive)
 		{
 			vec2 mp = inp->GetMousePos();
@@ -286,19 +292,14 @@ int main(int argc, char **argv)
 		}
 
 		cam.update(deltaTime);
+		view = cam.getViewMatrix();
 
 		GLenum enu = glGetError();
 		if (enu != 0)
 			cout << enu << '\n';
 
 		// Check Pos
-		// if (cursorActive)
-		updateChunks(cam.pos);
-
-		glClearColor(0.49f, 0.67f, 0.95f, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		view = cam.getViewMatrix();
+		chunkMan.updateChunks(cam.pos);
 
 		// Light Model
 		lightVao.bind();
@@ -319,13 +320,12 @@ int main(int argc, char **argv)
 
 		int dC = 0;
 
-		vec3 p = vec3(floor(cam.pos.x / SIZE), 0, floor(cam.pos.z / SIZE));
-		p = (float)SIZE * p;
+		vec3 p = vec3(floor(cam.pos.x / 32), 0, floor(cam.pos.z / 32));
+		p = (float)CHUNK_SIZE * p;
 
-		for (std::unordered_map<vec3, Chunk *>::iterator iter = loadedC.begin(); iter != loadedC.end(); ++iter)
+		for (auto iter = chunkMan.loadedC.begin(); iter != chunkMan.loadedC.end(); ++iter)
 		{
 			model = mat4(1.0f);
-			// vec3 p = vec3(loadPos.x + (x * SIZE), 0.0f, loadPos.y + (y * SIZE));
 			model = translate(model, iter->first);
 			model = scale(model, vec3(1.0f, 1.0f, 1.0f));
 			shader.setVec3("objCol", vec3(1.0f, 0.2f, 0.1f));
@@ -345,27 +345,27 @@ int main(int argc, char **argv)
 
 		ImGui::LabelText("FPS:", "%f", 1 / deltaTime);
 
-		// Noise settings
-		if (ImGui::SliderFloat("FACTOR", &f, 0.0f, 1.0f))
-		{
-			factor = f;
-			updateChunks(cam.pos, true);
-			printf("%f \n", f);
-		}
+		// // Noise settings
+		// if (ImGui::SliderFloat("FACTOR", &f, 0.0f, 1.0f))
+		// {
+		// 	factor = f;
+		// 	chunkMan.updateChunks(cam.pos, true);
+		// 	printf("%f \n", f);
+		// }
 
-		if (ImGui::Button("CLICK HERE"))
-		{
-			seed = (uint32_t)(rand() * 156907892);
-			cout << seed << '\n';
-			perlin = siv::PerlinNoise{seed};
+		// if (ImGui::Button("CLICK HERE"))
+		// {
+		// 	seed = (uint32_t)(rand() * 156907892);
+		// 	cout << seed << '\n';
+		// 	perlin = siv::PerlinNoise{seed};
 
-			updateChunks(cam.pos, true);
-		}
-		ImGui::SameLine();
-		ImGui::LabelText("Seed", ": %li", seed);
+		// 	chunkMan.updateChunks(cam.pos, true);
+		// }
+		// ImGui::SameLine();
+		// ImGui::LabelText("Seed", ": %li", seed);
 
 		// Player Stats
-		ImGui::LabelText("loadPos", "X: %.2f Z: %.2f ", loadPos.x, loadPos.y);
+		ImGui::LabelText("loadPos", "X: %.2f Z: %.2f ", chunkMan.prevLoadPos.x, chunkMan.prevLoadPos.y);
 		ImGui::LabelText("PlayerPos", "X: %.2f Y: %.2f Z: %.2f ", cam.pos.x, cam.pos.y, cam.pos.z);
 
 		ivec3 cp = cam.pos - p;
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
 		ImGui::LabelText("Draw Call", "%i", dC);
 
 		ImGui::End();
-#pragma endregion
+#pragma endregioncam
 
 		float curTime = glfwGetTime();
 		deltaTime = curTime - prevtime;
@@ -415,16 +415,16 @@ int main(int argc, char **argv)
 			printf("Dir:- X:%.2f Y:%.2f z:%0.2f\n", cam.yawA, cam.pitchA, cam.front.z);
 			pressed = true;
 
-			Chunk *selChunk = loadedC.at(p);
+			// Chunk *selChunk = loadedC.at(p);
 
-			Chunk *newC = new Chunk();
-			newC->setVoxels(selChunk->voxels);
-			newC->updateBlock(0, 0, 0, isWire);
-			newC->generateMesh();
+			// Chunk *newC = new Chunk();
+			// newC->setVoxels(selChunk->voxels);
+			// newC->updateBlock(0, 0, 0, isWire);
+			// newC->generateMesh();
 
-			delete selChunk;
-			loadedC.erase(p);
-			loadedC.emplace(p, newC);
+			// delete selChunk;
+			// loadedC.erase(p);
+			// loadedC.emplace(p, newC);
 
 			// c += 0.1f;
 		}
@@ -477,7 +477,7 @@ int main(int argc, char **argv)
 
 		if (inp->isKeyDown(GLFW_KEY_M))
 		{
-			Chunk *selChunk = loadedC.at(p);
+			Chunk *selChunk = chunkMan.getChunkAt(p);
 
 			Chunk *newC = new Chunk();
 			newC->setVoxels(selChunk->voxels);
@@ -487,8 +487,8 @@ int main(int argc, char **argv)
 			newC->generateMesh();
 
 			delete selChunk;
-			loadedC.erase(p);
-			loadedC.emplace(p, newC);
+			chunkMan.loadedC.erase(p);
+			chunkMan.loadedC.emplace(p, newC);
 		}
 
 		quardVao.bind();
@@ -519,95 +519,13 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-Chunk *setChunk(float fac, vec3 worldPos, int i)
-{
-	Chunk *chunkM = new Chunk();
-	bool chunk[SIZE][SIZE][SIZE] = {{{false}}};
-
-	if (worldPos != vec3(0.0f))
-		for (int x = 0; x < SIZE; x++)
-			for (int z = 0; z < SIZE; z++)
-			{
-				double n = perlin.octave2D_01((x + worldPos.x) * fac, (z + worldPos.z) * fac, 8);
-
-				int height = n * (SIZE - 1);
-				for (int y = 0; y < height; y++)
-					chunk[x][y][z] = true;
-			}
-	chunkM->setVoxels(chunk);
-	chunkM->generateMesh();
-
-	return chunkM;
-}
-
-void updateChunks(vec3 &pos, bool forceUpdate)
-{
-	vec2 p = vec3(floor(pos.x / SIZE), 0, floor(pos.z / SIZE));
-	p = (float)SIZE * p;
-
-	int count = 0;
-	if (forceUpdate)
-	{
-		loadPos = p;
-
-		// delete all chunks
-		for (auto it = loadedC.cbegin(), next_it = it; it != loadedC.cend(); it = next_it)
-		{
-			++next_it;
-			delete loadedC.at(it->first);
-			loadedC.erase(it);
-		}
-
-		for (int y = -C_T; y < C_T; y++)
-			for (int x = -C_T; x < C_T; x++)
-			{
-				// vec3 p = vec3(loadPos.x + (x * SIZE), 0.0f, loadPos.y + (y * SIZE));
-				vec3 p = vec3(loadPos.x + (x * SIZE), 0.0f, loadPos.y + (y * SIZE));
-				Chunk *c = setChunk(factor, p, x + (y * C_T));
-				loadedC.emplace(p, c);
-				count++;
-			}
-
-		cout << "Force TotallLoad: " << count << '\n';
-	}
-	if (loadPos != p)
-	{
-		loadPos = p;
-
-		// delete all chunks that are away from player
-		for (auto it = loadedC.cbegin(), next_it = it; it != loadedC.cend(); it = next_it)
-		{
-			++next_it;
-			if (abs(distance(pos, it->first)) > C_T * SIZE)
-			{
-				// printf("Remove Chunk: %f : %.2f %.2f %.2f \n", distance(pos, it->first), it->first.x, it->first.y, it->first.z);
-				delete loadedC.at(it->first);
-				loadedC.erase(it);
-			}
-		}
-
-		for (int y = -C_T; y < C_T; y++)
-			for (int x = -C_T; x < C_T; x++)
-			{
-				// vec3 p = vec3(loadPos.x + (x * SIZE), 0.0f, loadPos.y + (y * SIZE));
-				vec3 p = vec3(loadPos.x + (x * SIZE), 0.0f, loadPos.y + (y * SIZE));
-				if (!loadedC.count(p))
-				{
-					Chunk *c = setChunk(factor, p, x + (y * C_T));
-					loadedC.emplace(p, c);
-					count++;
-				}
-			}
-
-		cout << "TotallLoad: " << count << '\n';
-	}
-}
-
 vec3 voxelRayCast(vec3 &chunpos, vec3 &pos, vec3 &front, int *side)
 {
-	Chunk *chun = loadedC.at(chunpos);
+	// if (loadedC.count(chunpos) <= 0)
+	// 	printf("Key dont exist\n");
+	Chunk *chun = chunkMan.getChunkAt(chunpos);
 
-	vec3 ray = pos - chunpos; // Get ray origin releative to chunk
+	vec3 ray = (pos - chunpos) - vec3(0.5f); // Get ray origin releative to chunk
 	vec3 dir = front;
 
 	vec3 deltaDis;
@@ -652,7 +570,7 @@ vec3 voxelRayCast(vec3 &chunpos, vec3 &pos, vec3 &front, int *side)
 	}
 
 	bool hit = false;
-	while (sideDis.x < SIZE || sideDis.y < SIZE || sideDis.z < SIZE)
+	while (sideDis.x < CHUNK_SIZE || sideDis.y < CHUNK_SIZE || sideDis.z < CHUNK_SIZE)
 	{
 		if (sideDis.x < sideDis.y)
 		{
@@ -690,6 +608,7 @@ vec3 voxelRayCast(vec3 &chunpos, vec3 &pos, vec3 &front, int *side)
 		}
 
 		ivec3 mp = round(ray);
+
 		if (chun->voxels[mp.x][mp.y][mp.z])
 		{
 			ImGui::LabelText("Ray", "x %.2f y %.2f z %.2f", ray.x, ray.y, ray.z);
