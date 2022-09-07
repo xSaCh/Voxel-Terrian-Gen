@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CXX="g++"
+#CXX="g++"
+CXX="clang++-12"
 CXX_FLAGS="-std=c++17" #-Wextra -Wall
 
 SRC=`ls src/*.cpp src/**/*.cpp`
@@ -9,8 +10,9 @@ INCLUDE="./includes"
 LIB="./lib"
 
 LIBRARIES="-lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl"
-EXECUTABLE="mainL"
-OBJDIR="./objL"
+EXECUTABLE="mainLC"
+#OBJDIR="./objL"
+OBJDIR="./objLC"
 
 c=0
 for i in $@; do
