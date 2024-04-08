@@ -6,7 +6,7 @@ INCLUDE := ./includes
 IMGUI_INCLUDE := ./includes/imgui
 LIB := ./lib
 
-LIBRARIES   := -lglad -lglfw3dll
+LIBRARIES   :=  -lglfw3dll
 EXECUTABLE  := main
 
 build:

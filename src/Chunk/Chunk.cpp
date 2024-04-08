@@ -15,16 +15,10 @@ void Chunk::setVoxels(bool (&data)[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE])
 				voxels[x][y][z] = data[x][y][z];
 			}
 }
+
 void Chunk::updateBlock(int x, int y, int z, bool val)
 {
-	// assert(x >= CHUNK_SIZE || y >= CHUNK_SIZE || z >= CHUNK_SIZE);
-	// for (int x = 0; x < CHUNK_SIZE; x++)
-	// 	for (int y = 0; y < CHUNK_SIZE; y++)
-	// 		for (int z = 0; z < CHUNK_SIZE; z++)
-	// 		{
 	voxels[x][y][z] = val;
-	// }
-	// generateMesh();
 }
 
 void Chunk::generateMesh()
@@ -86,20 +80,12 @@ void Chunk::generateMesh()
 	{
 		printf("Update Mesh\n");
 
-		// mesh.vao->bind();
 		mesh.vbo->bind();
-		// glBufferData(GL_ARRAY_BUFFER, ve.size() * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, ve.size() * sizeof(Vertex), &(ve[0]), GL_DYNAMIC_DRAW);
 
 		vector<Vertex> *d = (vector<Vertex> *)malloc(ve.size() * sizeof(Vertex));
 		glGetBufferSubData(GL_ARRAY_BUFFER, 0, ve.size() * sizeof(Vertex), d);
 
-		// glBufferSubData(GL_ARRAY_BUFFER, 0, ve.size() * sizeof(Vertex), &(ve[0]));
-		// void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-		// memcpy(ptr, &(ve[0]), ve.size() * sizeof(Vertex));
-		// glUnmapBuffer(GL_ARRAY_BUFFER);
-		// mesh.vao->unbind();
 		mesh.vbo->unbind();
-		// vbo = new VBO(&(this->vertices[0]), this->vertices.size() * sizeof(Vertex));
 	}
 }

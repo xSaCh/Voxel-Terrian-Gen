@@ -291,10 +291,10 @@ int main(int argc, char **argv)
     vao.linkVBO(vbo, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
     vao.linkVBO(vbo, 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float));
 
-    Shader shader("res\\git.vert", "res\\git.frag");
+    Shader shader("./res/git.vert", "./res/git.frag");
 
     shader.activate();
-    Texture tex("res\\brick.png");
+    Texture tex("./res/brick.png");
     shader.setMat4("projection", value_ptr(projection));
     glm::mat4 view = glm::mat4(1.0f);
     view = cam.getViewMatrix();

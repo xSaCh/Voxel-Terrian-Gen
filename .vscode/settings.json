@@ -7,5 +7,12 @@
     "string_view": "cpp",
     "new": "cpp",
     "memory": "cpp"
-  }
+  },
+  "clangd.fallbackFlags": [
+    "-I",
+    "${workspaceFolder}/includes/",
+    "-I",
+    "${workspaceFolder}/src/",
+]
+
 }

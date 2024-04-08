@@ -3,8 +3,8 @@
 
 #include <unordered_map>
 #include <glm/glm.hpp>
-//#define GLM_ENABLE_EXPERIMENTAL
-//#include <glm/gtx/hash.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 #include <PerlinNoise.hpp>
 
 #include "Chunk.h"
@@ -19,7 +19,7 @@ public:
         loadRadius = 4;
         prevLoadPos = vec2(0.0f);
     }
-    ~ChunkManager() ;
+    ~ChunkManager();
 
     void updateChunks(vec3 &pos, bool forceUpdate = false);
     Chunk *getChunkAt(vec3 &pos);
